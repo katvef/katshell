@@ -5,4 +5,3 @@ singleton Cpu 1.0 Cpu.qml
 singleton Mem 1.0 Mem.qml
 singleton Util 1.0 Util.qml
 singleton MediaManager 1.0 MediaManager.qml
-singleton GlobalTimer 1.0 GlobalTimer.qml
