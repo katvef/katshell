@@ -1,0 +1,12 @@
+[Unit]
+Description=Custom made Quickshell status bar
+PartOf=graphical-session.target
+After=graphical-session.target
+Requisite=graphical-session.target
+
+[Service]
+Type=forking
+ExecStart=/usr/bin/qs -d
+
+[Install]
+WantedBy=graphical-session.target

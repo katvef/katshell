@@ -1,0 +1,16 @@
+module Widgets
+CalendarPopup 1.0 CalendarPopup.qml
+HoverToolTip 1.0 HoverToolTip.qml
+MediaPlayer 1.0 MediaPlayer.qml
+PopupToolTip 1.0 PopupToolTip.qml
+VolumeText 1.0 Volume.qml
+Gap 1.0 Gap.qml
+CpuText 1.0 Cpu.qml
+MemText 1.0 Mem.qml
+Workspaces 1.0 Workspaces.qml
+Tray 1.0 Tray.qml
+MenuPopup 1.0 MenuPopup.qml
+Background 1.0 Background.qml
+Alignment 1.0 Alignment.qml
+KSlider 1.0 Slider.qml
+CpuTemp 1.0 CpuTemp.qml
