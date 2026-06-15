@@ -30,7 +30,7 @@ ShellRoot {
 			margins.top: 2
 			margins.left: 2
 			margins.right: 2
-			implicitHeight: 32
+			implicitHeight: 30
 			color: "transparent"
 
 			GlobalShortcut {
