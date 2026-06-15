@@ -256,27 +256,45 @@ ShellRoot {
 						}
 
 						Rectangle {
-							property int value: cpuTemp.temp
+							property real value: cpuTemp.temp
+							property real from: 20
+							property real to: 100
+							function normalizedValue() {
+								return 1 - ((value - from) / (to - from));
+							}
 							implicitWidth: cpuTemp.implicitWidth + 2
 							implicitHeight: 9
 
 							color: {
-								if (cpuTemp.temp < cpuTemp.max - 20) {
+								if (value < cpuTemp.max - 20) {
 									return Style.shade(Style.green, 0.15);
-								} else if (cpuTemp.temp < cpuTemp.max) {
+								} else if (value < cpuTemp.max) {
 									return Style.yellow;
-								} else if (cpuTemp.temp < cpuTemp.crit) {
+								} else if (value < cpuTemp.crit) {
 									return Style.orange;
 								} else {
 									return Style.red;
 								}
 							}
 
+							Text {
+								visible: parent.value >= cpuTemp.max
+								anchors.horizontalCenter: parent.horizontalCenter
+								verticalAlignment: Text.AlignVCenter
+								height: parent.height
+								y: -1
+								z: 1
+								text: ""
+								color: Style.red
+								font.pixelSize: 18
+							}
+
 							Rectangle {
+								visible: parent.value >= parent.from
 								anchors.right: parent.right
-								implicitWidth: parent.width * (1 - parent.value / 100)
+								implicitWidth: parent.width * parent.normalizedValue()
 								implicitHeight: parent.implicitHeight
-								color: Style.bright
+								color: Style.shade(Style.bright, -0.3)
 							}
 						}
 					}
