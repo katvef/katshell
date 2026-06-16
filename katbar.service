@@ -5,8 +5,8 @@ After=graphical-session.target
 Requisite=graphical-session.target
 
 [Service]
-Type=forking
-ExecStart=/usr/bin/qs -d
+Type=simple
+ExecStart=/usr/bin/qs
 
 [Install]
 WantedBy=graphical-session.target
