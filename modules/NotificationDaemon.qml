@@ -29,15 +29,17 @@ PanelWindow {
 	property list<Notification> notifications
 	property real notifWidth: 300
 	property real notifHeight: 80
-	property bool noExpire: false
-
-	// onDestroyed:
+	property bool expire: true
 
 	ListView {
 		id: notifCards
 		anchors.fill: parent
 		model: server.trackedNotifications.values
 		spacing: 6
+
+		onModelChanged: if (model.length == 0) {
+			root.expire = true;
+		}
 
 		delegate: Background {
 			required property var modelData
@@ -73,7 +75,7 @@ PanelWindow {
 
 			property Timer expirationTimer: Timer {
 				interval: (parent.modelData.expireTimeout > 0 ? parent.modelData.expireTimeout * 1000 : 4000)
-				running: true
+				running: root.expire
 				repeat: false
 
 				onTriggered: parent.modelData.expire()
@@ -89,6 +91,13 @@ PanelWindow {
 				if (v != undefined)
 					v.running = false;
 			})
+
+			onExited: notifCards.children[0].children.forEach(x => {
+				const v = x?.expirationTimer;
+				if (v != undefined)
+					v.running = root.expire;
+			})
+
 			onClicked: mouse => {
 				const item = notifCards.itemAt(mouse.x, mouse.y);
 				const notification = item.modelData;
@@ -104,11 +113,10 @@ PanelWindow {
 					}
 					break;
 				case Qt.MiddleButton:
-					root.noExpire = true;
+					root.expire = !root.expire;
 					break;
-				case Qt.LeftButton:
+				case Qt.RightButton:
 					notification.dismiss();
-					notification.tracked = false;
 				}
 			}
 		}
