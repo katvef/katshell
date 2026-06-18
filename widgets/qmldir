@@ -5,8 +5,8 @@ MediaPlayer 1.0 MediaPlayer.qml
 PopupToolTip 1.0 PopupToolTip.qml
 VolumeText 1.0 Volume.qml
 Gap 1.0 Gap.qml
-CpuText 1.0 Cpu.qml
-MemText 1.0 Mem.qml
+CpuText 1.0 CpuText.qml
+MemText 1.0 MemText.qml
 Workspaces 1.0 Workspaces.qml
 Tray 1.0 Tray.qml
 MenuPopup 1.0 MenuPopup.qml
