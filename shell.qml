@@ -12,8 +12,7 @@ import "./widgets"
 
 // qmllint disable unresolved-type import
 ShellRoot {
-	NotificationDaemon {}
-
+	property var notificationDaemon: NotificationDaemon
 	Variants {
 		model: Quickshell.screens
 
