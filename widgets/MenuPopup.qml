@@ -10,9 +10,6 @@ PopupWindow {
 	id: root
 	required property var item
 	required property var menu
-	anchor.item: item
-	visible: false
-	grabFocus: true
 
 	property var selectedItem: undefined
 	property var items: new Array()
@@ -22,51 +19,52 @@ PopupWindow {
 	property point offset: Qt.point(0, 0)
 	property real offsetX: offset.x
 	property real offsetY: offset.y
-
 	property var grab: HyprlandFocusGrab {
 		windows: [root]
 	}
+	property var opener: QsMenuOpener {
+		menu: root.menu
+	}
+	property var entries: opener.children.values
 
 	Item {
-		property list<int> acceptedKeys: [Qt.Key_Up, Qt.Key_Down, Qt.Key_Right, Qt.Key_Left]
+		property list<int> acceptedKeys: [Qt.Key_Up, Qt.Key_Down, Qt.Key_Right, Qt.Key_Left, Qt.Key_return]
 		focus: true
-		// Keys.onPressed: event => {
-		// 	switch (event.key) {
-		// 	case Qt.Key_Down:
-		// 		break;
-		// 	}
-		// 	if (!acceptedKeys.find(x => x == event.key)) {
-		// 		root.visible = false;
-		// 	}
-		// }
+		Keys.onPressed: event => {
+			switch (event.key) {
+			case Qt.Key_Down:
+				root.selectedItem = items[selectedItem];
+				break;
+			}
+			if (!acceptedKeys.find(x => x == event.key)) {
+				root.visible = false;
+			}
+		}
 	}
 
 	anchor.rect.x: offsetX
 	anchor.rect.y: offsetY
-
 	color: "transparent"
-
 	implicitWidth: background.implicitWidth
 	implicitHeight: background.implicitHeight
-
-	property var opener: QsMenuOpener {
-		menu: root.menu
-	}
-
-	property var entries: opener.children.values
+	anchor.item: item
+	visible: false
+	grabFocus: true
 
 	onVisibleChanged: {
-		if (visible == false && owningPopup) {
-			owningPopup.submenuRefs.delete(root);
+		if (visible == false) {
+			grab.active = false;
+			if (owningPopup) {
+				owningPopup.submenuRefs.delete(root);
+				owningPopup.submenuRefs.forEach((_, k) => k.visible = false);
+			}
 		}
-		grab.active = visible;
 	}
 
 	Background {
 		id: background
-		anchors.fill: parent
-		implicitWidth: column.implicitWidth + 12
-		implicitHeight: column.implicitHeight + 12
+		implicitWidth: content.implicitWidth + 12
+		implicitHeight: content.implicitHeight + 12
 
 		Loader {
 			id: highlight
@@ -75,11 +73,11 @@ PopupWindow {
 				radius: 3
 				visible: true
 				color: Style.highlight
-				property point position: mapFromItem(root.selectedItem.area, root.selectedItem.area.x, root.selectedItem.area.y)
+				property point position: root.selectedItem?.area ? mapFromItem(root.selectedItem.area, root.selectedItem.area.x, root.selectedItem.area.y) : Qt.point(0, 0)
 				x: position.x
 				y: position.y
-				width: root.selectedItem.area.width
-				height: root.selectedItem.area.height
+				width: root.selectedItem?.area.width
+				height: root.selectedItem?.area.height
 			}
 		}
 
@@ -93,9 +91,8 @@ PopupWindow {
 			}
 
 			Column {
-				id: column
-				anchors.fill: parent
-				anchors.margins: 6
+				id: content
+				anchors.centerIn: parent
 				spacing: 4
 				property bool hasIcons: false
 				property bool hasCheckboxes: false
@@ -107,7 +104,7 @@ PopupWindow {
 						id: entry
 						required property var modelData
 
-						implicitWidth: text.x + text.implicitWidth + (modelData.isSeparator ? 1 : 0) + 3
+						implicitWidth: desc.x + desc.implicitWidth + (modelData.isSeparator ? 1 : 0) + 3
 						height: (modelData.isSeparator ? 4 : 16)
 
 						property var submenu: entry.modelData.hasChildren ? Qt.createQmlObject(`
@@ -115,7 +112,7 @@ PopupWindow {
 						import "."
 
 						MenuPopup {
-							item: text
+							item: desc
 							menu: entry.modelData
 							isSubmenu: true
 							offsetY: 20
@@ -129,7 +126,7 @@ PopupWindow {
 								id: icon
 								source: entry.modelData.icon
 								sourceSize: Qt.size(16, 16)
-								Component.onCompleted: column.hasIcons = true
+								Component.onCompleted: content.hasIcons = true
 							}
 						}
 
@@ -140,7 +137,7 @@ PopupWindow {
 								id: control
 								anchors.left: background.anchorLeft
 								anchors.leftMargin: icon.width
-								x: 2 + (column.hasIcons ? 16 : 0)
+								x: (content.hasIcons ? 18 : 0)
 
 								checkState: entry.modelData.checkState
 
@@ -166,7 +163,7 @@ PopupWindow {
 									}
 								}
 
-								Component.onCompleted: column.hasCheckboxes = true
+								Component.onCompleted: content.hasCheckboxes = true
 							}
 						}
 
@@ -186,50 +183,63 @@ PopupWindow {
 						}
 
 						Text {
-							id: text
-							x: 2 + (column.hasIcons ? 18 : 0) + (column.hasCheckboxes ? 18 : 0)
+							id: desc
+							property var area: children[0]
+
+							x: 3 + (content.hasIcons ? 18 : 0) + (content.hasCheckboxes ? 18 : 0)
 							text: entry.modelData.text
 							color: Style.text
 							verticalAlignment: Text.AlignVCenter
 
-							property var area: children[0]
-
 							MouseArea {
 								hoverEnabled: true
-								height: 18
+								height: 16
 								property real pad: 1
 								x: -pad
-								width: column.width - text.x + pad 
+								width: content.width - desc.x + pad
+
+								Text {
+									id: submenuIndicator
+									visible: entry.modelData.hasChildren
+									anchors.right: parent.right
+									anchors.rightMargin: 4
+									text: " "
+									color: desc.color
+								}
 
 								onEntered: {
 									if (!entry.modelData.isSeparator) {
-										text.color = Style.background;
-										root.selectedItem = text;
+										desc.color = Style.background;
+										root.selectedItem = desc;
 									}
+
 									if (entry.submenu != null && entry.submenu.opener.children.values.length > 0) {
 										if (root.submenuRefs.size > 0) {
 											for (let ref of root.submenuRefs) {
 												if (ref[0] !== entry.submenu) {
 													ref[0].visible = false;
 													root.submenuRefs.delete(ref[0]);
+													root.submenuRefs.forEach((_, k) => k.visible = false);
 												}
 											}
 										}
+
 										entry.submenu.visible = true;
 										root.submenuRefs.set(entry.submenu, true);
 									}
 								}
 
 								onExited: {
-									text.color = Style.text;
+									desc.color = Style.text;
 									if (!entry.modelData.isSeparator) {
 										root.selectedItem = undefined;
 									}
-									console.log(text.area);
 								}
 
 								onClicked: root.handleClick(entry.modelData)
 							}
+
+							Component.onCompleted: root.items.push(desc)
 						}
 					}
 				}
@@ -239,12 +249,12 @@ PopupWindow {
 
 	function handleClick(modelData) {
 		modelData.triggered();
-		root.visible = false;
-		for (let child of column.children) {
+		for (let child of content.children) {
 			if (child.submenu) {
 				child.submenu.visible = false;
 			}
 		}
+		root.visible = false;
 		if (owningPopup) {
 			owningPopup.visible = false;
 		}
