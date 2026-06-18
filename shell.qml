@@ -245,59 +245,7 @@ ShellRoot {
 					}
 
 					// CPU temperature
-					Column {
-						anchors.top: parent.top
-						anchors.bottom: parent.bottom
-
-						CpuTemp {
-							id: cpuTemp
-							font.pixelSize: 12
-							anchors.horizontalCenter: parent.horizontalCenter
-						}
-
-						Rectangle {
-							property real value: cpuTemp.temp
-							property real from: 20
-							property real to: 100
-							function normalizedValue() {
-								return 1 - ((value - from) / (to - from));
-							}
-							implicitWidth: cpuTemp.implicitWidth + 2
-							implicitHeight: 9
-
-							color: {
-								if (value < cpuTemp.max - 20) {
-									return Style.shade(Style.green, 0.15);
-								} else if (value < cpuTemp.max) {
-									return Style.yellow;
-								} else if (value < cpuTemp.crit) {
-									return Style.orange;
-								} else {
-									return Style.red;
-								}
-							}
-
-							Text {
-								visible: parent.value >= cpuTemp.max
-								anchors.horizontalCenter: parent.horizontalCenter
-								verticalAlignment: Text.AlignVCenter
-								height: parent.height
-								y: -1
-								z: 1
-								text: ""
-								color: Style.red
-								font.pixelSize: 18
-							}
-
-							Rectangle {
-								visible: parent.value >= parent.from
-								anchors.right: parent.right
-								implicitWidth: parent.width * parent.normalizedValue()
-								implicitHeight: parent.implicitHeight
-								color: Style.shade(Style.bright, -0.3)
-							}
-						}
-					}
+					CpuTempWidget {}
 				}
 
 				// Middle

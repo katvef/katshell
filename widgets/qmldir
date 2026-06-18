@@ -14,3 +14,4 @@ Background 1.0 Background.qml
 Alignment 1.0 Alignment.qml
 KSlider 1.0 Slider.qml
 CpuTemp 1.0 CpuTemp.qml
+CpuTempWidget 1.0 CpuTempWidget.qml
