@@ -16,7 +16,6 @@ PopupWindow {
 		windows: [root]
 		onActiveChanged: if (!active) root.visible = false
 	}
-	Component.onCompleted: Util.inspectObject(grab)
 	onVisibleChanged: grab.active = visible
 
 	anchor.item: item

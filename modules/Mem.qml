@@ -19,7 +19,6 @@ QtObject {
 
 	function sizeToBits(sizestr) {
 		if (typeof (sizestr) != "string") {
-			Util.inspectObject(sizestr);
 			throw new Error("Invalid size string " + sizestr);
 		}
 		const match = sizestr.trim().match(/^([\d.]+)\s*(b|Kb|Mb|Gb|Tb)$/i);
