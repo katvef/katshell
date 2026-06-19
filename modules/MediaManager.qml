@@ -5,9 +5,12 @@ import Quickshell.Services.Mpris
 
 QtObject {
 	id: root
-	property var values: Mpris.players.values
+	property var players: Mpris.players.values
 	property int playerIndex: 0
-	property MprisPlayer activePlayer: values.length > 0 ? values[0] : null
+	property MprisPlayer activePlayer: players.length > 0 ? players[playerIndex] : null;
+	property string defaultPlayer
+	onDefaultPlayerChanged: playerIndex = players.findIndex(x => x.dbusName.match(defaultPlayer) != null)
+	onPlayerIndexChanged: activePlayer = players.length > 0 ? players[playerIndex] : null;
 
 	readonly property Timer timer: Timer {
 		interval: 3000
@@ -18,17 +21,12 @@ QtObject {
 	}
 
 	function updatePlayers() {
-		values = Mpris.players.values;
-
-		if (playerIndex >= values.length) {
+		if (playerIndex >= players.length) {
 			playerIndex = 0;
 		}
-
-		activePlayer = values.length > 0 ? values[playerIndex] : null;
 	}
 
 	function nextPlayer() {
-		playerIndex = (playerIndex + 1) % values.length;
-		activePlayer = values.length > 0 ? values[playerIndex] : null;
+		playerIndex = (playerIndex + 1) % players.length;
 	}
 }

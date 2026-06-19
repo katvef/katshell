@@ -4,7 +4,10 @@ import "../modules"
 Text {
 	property int maxLength
 	property string overflowStr
-	text: MediaManager.activePlayer ? trimString(MediaManager.activePlayer.trackTitle, maxLength ? maxLength : 30, overflowStr ? overflowStr : "...") : null
+	text: MediaManager.activePlayer.trackTitle ? trimString(MediaManager.activePlayer.trackTitle, maxLength ? maxLength : 30, overflowStr ? overflowStr : "...") : "No track name"
+
+	Component.onCompleted: MediaManager.defaultPlayer = "spotify"
+
 	color: Style.text
 	font.pixelSize: 14
 
