@@ -1,5 +1,7 @@
 pragma Singleton
 import QtQuick
+import QtQuick.Controls
+import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
 import Quickshell.Services.Notifications
@@ -42,6 +44,7 @@ PanelWindow {
 		}
 
 		delegate: Background {
+			id: card
 			required property var modelData
 			width: root.notifWidth
 			height: childrenRect.height + 8
@@ -73,6 +76,43 @@ PanelWindow {
 				text: parent.modelData.body
 			}
 
+			GridLayout {
+				id: buttons
+				anchors.top: cardBody.bottom
+				anchors.left: card.left
+				anchors.right: card.right
+				anchors.margins: 6
+				columns: 2
+				uniformCellWidths: true
+
+				Repeater {
+					id: button
+					model: modelData.actions.filter(x => x.identifier != "default")
+					delegate: Button {
+						required property var modelData
+						text: modelData.text ?? ""
+						Layout.preferredWidth: buttons.width / 2 - 3
+
+						background: Background {}
+						contentItem: Text {
+							text: parent.modelData.text ?? parent.modelData.identifier
+							color: Style.text
+							anchors.centerIn: parent
+							// Layout.preferredWidth: parent.width / 2 - 3
+							horizontalAlignment: Text.AlignHCenter
+							font.pixelSize: 11
+							wrapMode: Text.Wrap
+						}
+
+						onClicked: {
+							modelData.invoke();
+							card.modelData.dismiss();
+							card.modelData.tracked = false;
+						}
+					}
+				}
+			}
+
 			property Timer expirationTimer: Timer {
 				interval: (parent.modelData.expireTimeout > 0 ? parent.modelData.expireTimeout * 1000 : 4000)
 				running: root.expire
@@ -86,6 +126,7 @@ PanelWindow {
 			anchors.fill: parent
 			acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 			hoverEnabled: true
+
 			onEntered: notifCards.children[0].children.forEach(x => {
 				const v = x?.expirationTimer;
 				if (v != undefined)
