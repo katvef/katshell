@@ -1,8 +1,7 @@
 import QtQuick
 import Quickshell
 import Quickshell.Hyprland
-
-// import "../modules"
+import "../modules"
 
 PopupWindow {
 	id: root
@@ -15,7 +14,9 @@ PopupWindow {
 
 	property var grab: HyprlandFocusGrab {
 		windows: [root]
+		onActiveChanged: if (!active) root.visible = false
 	}
+	Component.onCompleted: Util.inspectObject(grab)
 	onVisibleChanged: grab.active = visible
 
 	anchor.item: item

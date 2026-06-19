@@ -3,7 +3,7 @@ CalendarPopup 1.0 CalendarPopup.qml
 HoverToolTip 1.0 HoverToolTip.qml
 MediaPlayer 1.0 MediaPlayer.qml
 PopupToolTip 1.0 PopupToolTip.qml
-VolumeText 1.0 Volume.qml
+VolumeText 1.0 VolumeText.qml
 Gap 1.0 Gap.qml
 CpuText 1.0 CpuText.qml
 MemText 1.0 MemText.qml

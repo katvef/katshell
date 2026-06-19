@@ -70,13 +70,20 @@ ShellRoot {
 							anchors.fill: parent
 
 							hoverEnabled: true
-							onEntered: volumePopup.visible = true
+							onEntered: {
+								volumePopup.grab.active = true;
+								volumePopup.visible = true;
+							}
+							onWheel: wheel => {
+								const audio = source.node?.audio;
+								if (audio != null) {
+									audio.volume += 0.01 * wheel.angleDelta.y / 120;
+								}
+							}
 
 							PopupToolTip {
 								id: volumePopup
 								item: volume
-								grabFocus: true
-								// lockSize: true
 								offsetY: 3
 
 								content: MouseArea {
@@ -162,50 +169,43 @@ ShellRoot {
 							anchors.fill: parent
 							hoverEnabled: true
 							onEntered: perfTooltip.visible = true
+							onExited: perfTooltip.visible = false
 
 							PopupToolTip {
 								id: perfTooltip
 								item: perf
 								offsetY: 3
-								content: MouseArea {
+								content: Row {
+									spacing: 12
 
-									hoverEnabled: true
-									implicitWidth: children[0].implicitWidth
-									implicitHeight: children[0].implicitHeight
-									onExited: perfTooltip.visible = false
+									Grid {
+										columns: 4
+										columnSpacing: 4
+										Repeater {
+											model: Object.keys(Cpu.usage).slice(1)
 
-									Row {
-										spacing: 12
+											delegate: Repeater {
+												id: repeater
+												required property string modelData
+												model: 2
 
-										Grid {
-											columns: 4
-											columnSpacing: 4
-											Repeater {
-												model: Object.keys(Cpu.usage).slice(1)
-
-												delegate: Repeater {
-													id: repeater
-													required property string modelData
-													model: 2
-
-													delegate: Loader {
-														required property int index
-														property var modelData: repeater.modelData
-														sourceComponent: index == 0 ? coreText : usageText
-													}
+												delegate: Loader {
+													required property int index
+													property var modelData: repeater.modelData
+													sourceComponent: index == 0 ? coreText : usageText
 												}
 											}
 										}
+									}
 
-										Column {
-											Repeater {
-												model: ["memTotal", "memFree", "memAvailable", "memUsed", "swapCached", "swapTotal", "swapFree", "swapUsed", "zswap", "zswapped",]
+									Column {
+										Repeater {
+											model: ["memTotal", "memFree", "memAvailable", "memUsed", "swapCached", "swapTotal", "swapFree", "swapUsed", "zswap", "zswapped",]
 
-												delegate: MemText {
-													required property string modelData
-													color: Style.text
-													text: modelData.replace(/([A-Z])/g, ' $1').toLowerCase() + ": " + Mem.sizeToUnit(Mem.memInfo[modelData], unit, precision)
-												}
+											delegate: MemText {
+												required property string modelData
+												color: Style.text
+												text: modelData.replace(/([A-Z])/g, ' $1').toLowerCase() + ": " + Mem.sizeToUnit(Mem.memInfo[modelData], unit, precision)
 											}
 										}
 									}
