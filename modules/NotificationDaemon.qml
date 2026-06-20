@@ -28,10 +28,15 @@ PanelWindow {
 	color: "transparent"
 	screen: Quickshell.screens.find(x => x.name == Hyprland.focusedMonitor?.name) ?? Quickshell.screens[0]
 
-	property list<Notification> notifications
+	property var notifications: new Map()
+	property list<Notification> notificationsList
 	property real notifWidth: 300
 	property real notifHeight: 80
 	property bool expire: true
+
+	function notificationsWasModified() {
+		notificationsList = [...notifications.keys()];
+	}
 
 	ListView {
 		id: notifCards
@@ -47,13 +52,12 @@ PanelWindow {
 			id: card
 			required property var modelData
 			width: root.notifWidth
-			height: childrenRect.height + 8
+			height: childrenRect.height + 6
 
 			Text {
 				id: cardSummary
 				anchors.left: parent.left
 				anchors.top: parent.top
-				anchors.topMargin: 3
 				anchors.leftMargin: 6
 
 				width: root.notifWidth - 6
@@ -171,9 +175,11 @@ PanelWindow {
 		onNotification: notification => {
 			notification.tracked = true;
 			if (!notification.transient) {
-				notification.retained = true;
+				notification.Retainable.lock();
+				root.notifications.set(notification, true);
+				root.notificationsWasModified();
 			}
-			root.notifications.push(notification);
+			Util.inspect(root.notifications);
 		}
 	}
 }

@@ -13,6 +13,7 @@ import "./widgets"
 // qmllint disable unresolved-type import
 ShellRoot {
 	property var notificationDaemon: NotificationDaemon
+	NotificationHistory {}
 	Variants {
 		model: Quickshell.screens
 
@@ -35,9 +36,9 @@ ShellRoot {
 			color: "transparent"
 
 			GlobalShortcut {
-				appid: "bar"
-				name: "toggle panel on monitor " + panel.modelData.name
-
+				appid: "katshell"
+				name: "toggle panel " + panel.modelData.name
+				description: "toggles the visiblility of panel on monitor " + panel.modelData.name
 				onPressed: panel.visible = !panel.visible
 			}
 
