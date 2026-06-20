@@ -14,9 +14,18 @@ PopupWindow {
 
 	property var grab: HyprlandFocusGrab {
 		windows: [root]
-		onActiveChanged: if (!active) root.visible = false
+		onActiveChanged: {
+			if (active == false) {
+				root.visible = false;
+				console.log("cleared");
+			} else {
+				console.log("grabbed");
+			}
+		}
 	}
-	onVisibleChanged: grab.active = visible
+	onVisibleChanged: if (!visible) {
+		grab.active = false;
+	}
 
 	anchor.item: item
 	anchor.rect.x: item.width / 2 - width / 2 + offsetX

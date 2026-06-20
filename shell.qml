@@ -68,12 +68,13 @@ ShellRoot {
 						implicitHeight: volume.implicitHeight
 
 						MouseArea {
+							id: tmp
 							anchors.fill: parent
-
+							preventStealing: true
 							hoverEnabled: true
-							onEntered: {
-								volumePopup.grab.active = true;
+							onClicked: {
 								volumePopup.visible = true;
+								volumePopup.grab.active = true;
 							}
 							onWheel: wheel => {
 								const audio = source.node?.audio;
@@ -92,6 +93,7 @@ ShellRoot {
 									implicitWidth: children[0].implicitWidth
 									implicitHeight: children[0].implicitHeight
 									onExited: volumePopup.visible = false
+									propagateComposedEvents: true
 
 									Column {
 										spacing: 6
