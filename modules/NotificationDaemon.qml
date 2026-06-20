@@ -38,130 +38,131 @@ PanelWindow {
 		notificationsList = [...notifications.keys()];
 	}
 
-	ListView {
-		id: notifCards
+	MouseArea {
 		anchors.fill: parent
-		model: server.trackedNotifications.values
-		spacing: 6
+		acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+		hoverEnabled: true
 
-		onModelChanged: if (model.length == 0) {
-			root.expire = true;
+		onEntered: notifCards.children[0].children.forEach(x => {
+			const v = x?.expirationTimer;
+			if (v != undefined)
+				v.running = false;
+		})
+
+		onExited: notifCards.children[0].children.forEach(x => {
+			const v = x?.expirationTimer;
+			if (v != undefined)
+				v.running = root.expire;
+		})
+
+		onClicked: mouse => {
+			const item = notifCards.itemAt(mouse.x, mouse.y);
+			const notification = item.modelData;
+			switch (mouse.button) {
+			case Qt.LeftButton:
+				if (item != null) {
+					const defaultAction = notification.actions.find(x => x.identifier == "default");
+					if (defaultAction == undefined) {
+						notification.dismiss();
+					} else {
+						defaultAction.invoke();
+					}
+				}
+				break;
+			case Qt.MiddleButton:
+				root.expire = !root.expire;
+				break;
+			case Qt.RightButton:
+				notification.dismiss();
+			}
 		}
 
-		delegate: Background {
-			id: card
-			required property var modelData
-			width: root.notifWidth
-			height: childrenRect.height + 6
+		ListView {
+			id: notifCards
+			anchors.fill: parent
+			model: server.trackedNotifications.values
+			spacing: 6
 
-			Text {
-				id: cardSummary
-				anchors.left: parent.left
-				anchors.top: parent.top
-				anchors.leftMargin: 6
-
-				width: root.notifWidth - 6
-				wrapMode: Text.Wrap
-				color: Style.text
-				text: parent.modelData.summary
-				font.pixelSize: 16
+			onModelChanged: if (model.length == 0) {
+				root.expire = true;
 			}
 
-			Text {
-				id: cardBody
-				anchors.left: parent.left
-				anchors.top: cardSummary.bottom
-				anchors.topMargin: 3
-				anchors.leftMargin: 6
+			delegate: Background {
+				id: card
+				required property var modelData
+				width: root.notifWidth
+				height: childrenRect.height + 6
 
-				width: root.notifWidth - 6
-				wrapMode: Text.Wrap
-				color: Style.text
-				text: parent.modelData.body
-			}
+				Text {
+					id: cardSummary
+					anchors.left: parent.left
+					anchors.top: parent.top
+					anchors.leftMargin: 6
 
-			GridLayout {
-				id: buttons
-				anchors.top: cardBody.bottom
-				anchors.left: card.left
-				anchors.right: card.right
-				anchors.margins: 6
-				columns: 2
-				uniformCellWidths: true
+					width: root.notifWidth - 6
+					wrapMode: Text.Wrap
+					color: Style.text
+					text: parent.modelData.summary
+					font.pixelSize: 16
+				}
 
-				Repeater {
-					id: button
-					model: modelData.actions.filter(x => x.identifier != "default")
-					delegate: Button {
-						required property var modelData
-						text: modelData.text ?? ""
-						Layout.preferredWidth: buttons.width / 2 - 3
+				Text {
+					id: cardBody
+					anchors.left: parent.left
+					anchors.top: cardSummary.bottom
+					anchors.topMargin: 3
+					anchors.leftMargin: 6
 
-						background: Background {}
-						contentItem: Text {
-							text: parent.modelData.text ?? parent.modelData.identifier
-							color: Style.text
-							anchors.centerIn: parent
-							// Layout.preferredWidth: parent.width / 2 - 3
-							horizontalAlignment: Text.AlignHCenter
-							font.pixelSize: 11
-							wrapMode: Text.Wrap
-						}
+					width: root.notifWidth - 6
+					wrapMode: Text.Wrap
+					color: Style.text
+					text: parent.modelData.body
+				}
 
-						onClicked: {
-							modelData.invoke();
-							card.modelData.dismiss();
-							card.modelData.tracked = false;
+				GridLayout {
+					id: buttons
+					property var actions: card.modelData.actions.filter(x => x.identifier != "default")
+					anchors.top: cardBody.bottom
+					anchors.left: card.left
+					anchors.right: card.right
+					anchors.margins: actions.length > 0 ? 6 : 0
+					columns: 2
+					uniformCellWidths: true
+
+					Repeater {
+						id: button
+						model: parent.actions
+						delegate: Button {
+							required property var modelData
+							text: modelData.text ?? ""
+							Layout.preferredWidth: buttons.width / 2 - 3
+
+							background: Background {}
+							contentItem: Text {
+								text: parent.modelData.text ?? parent.modelData.identifier
+								color: Style.text
+								anchors.centerIn: parent
+								// Layout.preferredWidth: parent.width / 2 - 3
+								horizontalAlignment: Text.AlignHCenter
+								font.pixelSize: 11
+								wrapMode: Text.Wrap
+							}
+
+							onClicked: {
+								modelData.invoke();
+								card.modelData.dismiss();
+								card.modelData.tracked = false;
+							}
 						}
 					}
 				}
-			}
 
-			property Timer expirationTimer: Timer {
-				interval: (parent.modelData.expireTimeout > 0 ? parent.modelData.expireTimeout * 1000 : 4000)
-				running: root.expire
-				repeat: false
+				property Timer expirationTimer: Timer {
+					interval: (parent.modelData.expireTimeout > 0 ? parent.modelData.expireTimeout * 1000 : 4000)
+					running: root.expire
+					repeat: false
 
-				onTriggered: parent.modelData.expire()
-			}
-		}
-
-		MouseArea {
-			anchors.fill: parent
-			acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-			hoverEnabled: true
-
-			onEntered: notifCards.children[0].children.forEach(x => {
-				const v = x?.expirationTimer;
-				if (v != undefined)
-					v.running = false;
-			})
-
-			onExited: notifCards.children[0].children.forEach(x => {
-				const v = x?.expirationTimer;
-				if (v != undefined)
-					v.running = root.expire;
-			})
-
-			onClicked: mouse => {
-				const item = notifCards.itemAt(mouse.x, mouse.y);
-				const notification = item.modelData;
-				switch (mouse.button) {
-				case Qt.LeftButton:
-					if (item != null) {
-						const defaultAction = notification.actions.find(x => x.identifier == "default");
-						if (defaultAction == undefined) {
-							notification.dismiss();
-						} else {
-							defaultAction.invoke();
-						}
-					}
-					break;
-				case Qt.MiddleButton:
-					root.expire = !root.expire;
-					break;
-				case Qt.RightButton:
-					notification.dismiss();
+					onTriggered: parent.modelData.expire()
 				}
 			}
 		}
