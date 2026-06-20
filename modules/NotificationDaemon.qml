@@ -179,7 +179,6 @@ PanelWindow {
 				root.notifications.set(notification, true);
 				root.notificationsWasModified();
 			}
-			Util.inspect(root.notifications);
 		}
 	}
 }
