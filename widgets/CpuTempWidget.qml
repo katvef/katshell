@@ -2,17 +2,15 @@ import QtQuick
 import "../modules"
 
 Column {
-	anchors.top: parent.top
-	anchors.bottom: parent.bottom
-
 	CpuTemp {
-		id: cpuTemp
+		id: cpuTempId
 		font.pixelSize: 12
 		anchors.horizontalCenter: parent.horizontalCenter
 	}
+	property var cpuTemp: cpuTempId
 
 	Rectangle {
-		property real value: cpuTemp.temp
+		property real value: cpuTempId.temp
 		property real from: 20
 		property real to: 100
 		property var colors: new Object({
@@ -22,15 +20,15 @@ Column {
 			crit: Style.red
 		})
 		property var steps: new Object({
-			high: cpuTemp.max - 20,
-			max: cpuTemp.max,
-			crit: cpuTemp.crit - 10
+			high: cpuTempId.max - 20,
+			max: cpuTempId.max,
+			crit: cpuTempId.crit - 10
 		})
 		function normalizeValue(value) {
 			return 1 - ((value - from) / (to - from));
 		}
 
-		implicitWidth: cpuTemp.implicitWidth + 2
+		implicitWidth: cpuTempId.implicitWidth + 2
 		implicitHeight: 9
 
 		color: {
@@ -47,7 +45,7 @@ Column {
 
 		// Cpu critical indicator
 		Text {
-			visible: parent.value >= cpuTemp.crit
+			visible: parent.value >= cpuTempId.crit
 			anchors.horizontalCenter: parent.horizontalCenter
 			verticalAlignment: Text.AlignVCenter
 			height: parent.height
