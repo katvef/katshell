@@ -11,7 +11,7 @@ PopupWindow {
 
 	anchor.item: item
 	anchor.rect.x: item.width / 2 - width / 2 + offsetX
-	anchor.rect.y: item.height + 8 + offsetY
+	anchor.rect.y: item.height + 7 + offsetY
 	implicitWidth: grid.implicitWidth + 24
 	implicitHeight: grid.implicitHeight + dateString.implicitHeight + 24
 	visible: false

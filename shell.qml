@@ -177,7 +177,7 @@ ShellRoot {
 							PopupToolTip {
 								id: perfTooltip
 								item: perf
-								offsetY: 3
+								offsetY: 2
 								content: Row {
 									spacing: 12
 
@@ -249,7 +249,32 @@ ShellRoot {
 					}
 
 					// CPU temperature
-					CpuTempWidget {}
+					MouseArea {
+						anchors.top: parent.top
+						anchors.bottom: parent.bottom
+						width: temp.width
+						hoverEnabled: true
+						onEntered: tempToolTip.visible = true
+						onExited: tempToolTip.visible = false
+						CpuTempWidget {
+							id: temp
+						}
+						PopupToolTip {
+							id: tempToolTip
+							item: temp
+							offsetY: 6
+							content: Column {
+								Text {
+									text: "Highest: " + temp?.cpuTemp?.high + " °C"
+									color: Style.text
+								}
+								Text {
+									text: "Lowest: " + temp?.cpuTemp?.low + " °C"
+									color: Style.text
+								}
+							}
+						}
+					}
 				}
 
 				// Middle
