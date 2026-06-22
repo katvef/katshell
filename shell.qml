@@ -25,7 +25,6 @@ ShellRoot {
 
 			WlrLayershell.layer: WlrLayer.Top
 			screen: modelData
-			visible: true
 			anchors.top: true
 			anchors.left: true
 			anchors.right: true
