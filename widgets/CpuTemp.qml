@@ -12,8 +12,8 @@ Text {
 	property real max: package0.temp1_max
 	property real crit: package0.temp1_crit
 	property real temp: package0.temp1_input
-	property real high: 0
-	property real low: 0
+	property real high: -999
+	property real low: 999
 
 	Timer {
 		interval: 1000
@@ -30,9 +30,9 @@ Text {
 		running: true
 		stdout: StdioCollector {
 			onStreamFinished: {
-				package0 = Object.values(JSON.parse(text))[0]["Package id 0"];
-				high = temp > high ? temp : high
-				low = temp < low ? temp : low
+				package0 = Object.values(JSON.parse(text)).find(x => x["Package id 0"] !== undefined)["Package id 0"];
+				high = temp > high ? temp : high;
+				low = temp < low ? temp : low;
 			}
 		}
 	}
