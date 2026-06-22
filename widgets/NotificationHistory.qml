@@ -34,9 +34,9 @@ PanelWindow {
 	}
 
 	margins {
-		right: 4
-		top: 4
-		bottom: 4
+		right: 2
+		top: 2
+		bottom: 2
 	}
 
 	Background {
