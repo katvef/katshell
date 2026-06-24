@@ -35,7 +35,8 @@ PanelWindow {
 	property bool expire: true
 
 	function notificationsWasModified() {
-		notificationsList = [...notifications.keys()];
+		notificationsList = [...notifications.keys()].sort((a, b) => b.time - a.time);
+	}
 	}
 
 	MouseArea {
@@ -175,6 +176,7 @@ PanelWindow {
 
 		onNotification: notification => {
 			notification.tracked = true;
+			notification.time = new Date();
 			if (!notification.transient) {
 				notification.Retainable.lock();
 				root.notifications.set(notification, true);
