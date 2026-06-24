@@ -4,6 +4,7 @@ import QtQuick.Controls
 import QtQuick.Layouts
 import Quickshell
 import Quickshell.Hyprland
+import Quickshell.Io
 import Quickshell.Services.Notifications
 import Quickshell.Wayland
 import "../widgets"
@@ -30,6 +31,7 @@ PanelWindow {
 
 	property var notifications: new Map()
 	property list<Notification> notificationsList
+	property list<Notification> respawned
 	property real notifWidth: 300
 	property real notifHeight: 80
 	property bool expire: true
@@ -37,6 +39,52 @@ PanelWindow {
 	function notificationsWasModified() {
 		notificationsList = [...notifications.keys()].sort((a, b) => b.time - a.time);
 	}
+
+	function getNotification(id: int): Notification {
+		let n;
+		if (typeof id == "number") {
+			if (root.getIds().find(x => x == id) == undefined) {
+				throw new Error("Id not found");
+			}
+			n = notificationsList.find(x => x.id == id);
+			Util.inspect(n);
+		}
+		n = notificationsList[0];
+		return n;
+	}
+
+	function getIds(): var {
+		return notificationsList.map(x => x.id) ?? new Array();
+	}
+
+	IpcHandler {
+		target: "notifications"
+
+		function respawn(id: int): void {
+			const n = root.getNotification(id);
+			if (n !== undefined) {
+				n.closed.connect(function () {
+					const idx = root.respawned.findIndex(x => x == n);
+					if (idx != -1) {
+						root.respawn.pop(idx);
+					}
+					n.Retainable.unlock();
+				});
+				n.Retainable.lock();
+				root.respawned.push(n);
+			}
+		}
+
+		function dismiss(id: int): void {
+			const n = root.getNotification(id);
+			if (n !== undefined) {
+				if (n.tracked == true) {
+					n.dismiss();
+				} else {
+					n.closed(NotificationCloseReason.Dismissed);
+				}
+			}
+		}
 	}
 
 	MouseArea {
@@ -74,14 +122,18 @@ PanelWindow {
 				root.expire = !root.expire;
 				break;
 			case Qt.RightButton:
-				notification.dismiss();
+				if (notification.tracked == true) {
+					notification.dismiss();
+				} else {
+					notification.closed(NotificationCloseReason.Dismissed);
+				}
 			}
 		}
 
 		ListView {
 			id: notifCards
 			anchors.fill: parent
-			model: server.trackedNotifications.values
+			model: server.trackedNotifications.values.concat(root.respawned)
 			spacing: 6
 
 			onModelChanged: if (model.length == 0) {
@@ -171,7 +223,6 @@ PanelWindow {
 								text: parent.modelData.text ?? parent.modelData.identifier
 								color: Style.text
 								anchors.centerIn: parent
-								// Layout.preferredWidth: parent.width / 2 - 3
 								horizontalAlignment: Text.AlignHCenter
 								font.pixelSize: 11
 								wrapMode: Text.Wrap
@@ -179,8 +230,12 @@ PanelWindow {
 
 							onClicked: {
 								modelData.invoke();
-								card.modelData.dismiss();
-								card.modelData.tracked = false;
+								if (card.modelData.resident) {
+									card.modelData.expirationTimer.running = false;
+								} else {
+									card.modelData.dismiss();
+									card.modelData.tracked = false;
+								}
 							}
 						}
 					}
