@@ -88,36 +88,64 @@ PanelWindow {
 				root.expire = true;
 			}
 
-			delegate: Background {
+			delegate: Background { // Keep in sync with NotificationHistory.qml
 				id: card
 				required property var modelData
 				width: root.notifWidth
 				height: childrenRect.height + 6
 
 				Text {
+					id: cardTime
+					property int daysAgo: Math.round((modelData.time - Clock.time) / (24 * 60 * 60 * 1000))
+					anchors.top: parent.top
+					anchors.right: parent.right
+					anchors.topMargin: 2
+					anchors.rightMargin: 5
+					horizontalAlignment: Text.AlignRight
+					text: {
+						let days;
+						switch (daysAgo) {
+						case 0:
+							days = "today\n";
+							break;
+						case 1:
+							days = "yesterday\n";
+						default:
+							days = daysAgo + " days ago\n";
+						}
+						return days + Qt.formatDateTime(modelData.time, "hh:mm:ss");
+					}
+					color: Qt.alpha(Style.text, 0.75)
+					font.pixelSize: 11
+				}
+
+				Text {
 					id: cardSummary
 					anchors.left: parent.left
 					anchors.top: parent.top
+					anchors.right: cardTime.left
 					anchors.leftMargin: 6
 
-					width: root.notifWidth - 6
+					width: root.width - 6
 					wrapMode: Text.Wrap
 					color: Style.text
-					text: parent.modelData.summary
-					font.pixelSize: 16
+					textFormat: Text.PlainText
+					text: modelData.summary
+					font.pixelSize: 14
 				}
 
 				Text {
 					id: cardBody
 					anchors.left: parent.left
 					anchors.top: cardSummary.bottom
-					anchors.topMargin: 3
+					anchors.topMargin: 5
 					anchors.leftMargin: 6
 
 					width: root.notifWidth - 6
 					wrapMode: Text.Wrap
 					color: Style.text
-					text: parent.modelData.body
+					textFormat: Text.StyledText
+					text: modelData.body
 				}
 
 				GridLayout {
@@ -159,7 +187,7 @@ PanelWindow {
 				}
 
 				property Timer expirationTimer: Timer {
-					interval: (parent.modelData.expireTimeout > 0 ? parent.modelData.expireTimeout * 1000 : 4000)
+					interval: parent.modelData.expireTimeout > 0 ? parent.modelData.expireTimeout * 1000 : 4000
 					running: root.expire
 					repeat: false
 

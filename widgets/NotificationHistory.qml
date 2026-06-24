@@ -13,6 +13,7 @@ PanelWindow {
 
 	WlrLayershell.layer: WlrLayer.Overlay
 	WlrLayershell.exclusiveZone: 0
+
 	GlobalShortcut {
 		appid: "katshell"
 		description: "Toggle notification history panel"
@@ -75,22 +76,35 @@ PanelWindow {
 
 			model: daemon.notificationsList
 
-			delegate: Background {
+			delegate: Background { // Keep in sync with NotificationDaemon.qml
 				id: card
 				required property var modelData
 				width: root.width - 12
 				height: childrenRect.height + 6
 
 				Text {
+					id: cardTime
+					anchors.top: parent.top
+					anchors.right: parent.right
+					anchors.topMargin: 2
+					anchors.rightMargin: 5
+					text: Qt.formatDateTime(modelData.time, "yyyy-MM-dd hh:mm:ss")
+					color: Qt.alpha(Style.text, 0.75)
+					font.pixelSize: 11
+				}
+
+				Text {
 					id: cardSummary
 					anchors.left: parent.left
 					anchors.top: parent.top
+					anchors.right: cardTime.left
 					anchors.leftMargin: 6
 
 					width: root.width - 6
 					wrapMode: Text.Wrap
 					color: Style.text
-					text: parent.modelData.summary
+					textFormat: Text.PlainText
+					text: modelData.summary
 					font.pixelSize: 16
 				}
 
@@ -104,7 +118,8 @@ PanelWindow {
 					width: root.height - 6
 					wrapMode: Text.Wrap
 					color: Style.text
-					text: parent.modelData.body
+					textFormat: Text.StyledText
+					text: modelData.body
 				}
 
 				GridLayout {
