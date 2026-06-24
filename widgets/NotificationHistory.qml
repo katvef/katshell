@@ -121,43 +121,6 @@ PanelWindow {
 					textFormat: Text.StyledText
 					text: modelData.body
 				}
-
-				GridLayout {
-					id: buttons
-					property var actions: card.modelData.actions.filter(x => x.identifier != "default")
-					anchors.top: cardBody.bottom
-					anchors.left: card.left
-					anchors.right: card.right
-					anchors.margins: actions.length > 0 ? 6 : 0
-					columns: 2
-					uniformCellWidths: true
-
-					Repeater {
-						id: button
-						model: parent.actions
-						delegate: Button {
-							required property var modelData
-							text: modelData.text ?? ""
-							Layout.preferredWidth: buttons.width / 2 - 3
-
-							background: Background {}
-							contentItem: Text {
-								text: parent.modelData.text ?? parent.modelData.identifier
-								color: Style.text
-								anchors.centerIn: parent
-								horizontalAlignment: Text.AlignHCenter
-								font.pixelSize: 11
-								wrapMode: Text.Wrap
-							}
-
-							onClicked: {
-								modelData.invoke();
-								card.modelData.dismiss();
-								card.modelData.tracked = false;
-							}
-						}
-					}
-				}
 			}
 		}
 	}
