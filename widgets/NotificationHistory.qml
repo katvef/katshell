@@ -74,6 +74,7 @@ PanelWindow {
 			anchors.fill: parent
 			anchors.margins: 6
 			spacing: 6
+			clip: true
 
 			model: daemon.notificationsList
 
