@@ -31,7 +31,7 @@ PanelWindow {
 
 	property var notifications: new Map()
 	property list<Notification> notificationsList
-	property list<Notification> respawned
+	property var respawned: new Array()
 	property real notifWidth: 300
 	property real notifHeight: 80
 	property bool expire: true
@@ -40,16 +40,16 @@ PanelWindow {
 		notificationsList = [...notifications.keys()].sort((a, b) => b.time - a.time);
 	}
 
+	onNotificationsListChanged: notificationsList = notificationsList.filter(x => x != null)
+
 	function getNotification(id: int): Notification {
 		let n;
+		id = id || undefined;
 		if (typeof id == "number") {
-			if (root.getIds().find(x => x == id) == undefined) {
-				throw new Error("Id not found");
-			}
 			n = notificationsList.find(x => x.id == id);
-			Util.inspect(n);
+		} else {
+			n = notificationsList.find(x => !respawned.includes(x));
 		}
-		n = notificationsList[0];
 		return n;
 	}
 
@@ -60,29 +60,54 @@ PanelWindow {
 	IpcHandler {
 		target: "notifications"
 
-		function respawn(id: int): void {
+		function test(): void {
+			Util.inspect(root.respawned);
+		}
+
+		function respawn(id: int): string {
 			const n = root.getNotification(id);
-			if (n !== undefined) {
-				n.closed.connect(function () {
-					const idx = root.respawned.findIndex(x => x == n);
-					if (idx != -1) {
-						root.respawn.pop(idx);
-					}
+			if (n != undefined) {
+				if (root.respawned.find(x => x == n)) {
+					return "Notification already respawned";
+				}
+				n.despawn = function () {
+					root.respawned = root.respawned.filter(x => x != n);
 					n.Retainable.unlock();
-				});
+				};
 				n.Retainable.lock();
-				root.respawned.push(n);
+				root.respawned = [...root.respawned, n];
+				return "Success";
+			} else {
+				return "Notification not found";
 			}
 		}
 
-		function dismiss(id: int): void {
+		function activate(id: int, identifier: string): string {
 			const n = root.getNotification(id);
-			if (n !== undefined) {
+			if (n != undefined) {
+				identifier = indentifier ?? "default";
+				const action = n.actions.find(x => x.identifier == identifier);
+				if (action != undefined) {
+					action.invoke();
+					return "Success";
+				}
+				return "Action not found";
+			} else {
+				return "Notification not found";
+			}
+		}
+
+		function dismiss(id: int): string {
+			const n = root.getNotification(id);
+			if (n != undefined) {
 				if (n.tracked == true) {
 					n.dismiss();
 				} else {
-					n.closed(NotificationCloseReason.Dismissed);
+					n.despawn();
 				}
+				return "Success";
+			} else {
+				return "Notification not found";
 			}
 		}
 	}
@@ -125,7 +150,7 @@ PanelWindow {
 				if (notification.tracked == true) {
 					notification.dismiss();
 				} else {
-					notification.closed(NotificationCloseReason.Dismissed);
+					notification.despawn();
 				}
 			}
 		}

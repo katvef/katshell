@@ -54,7 +54,6 @@ PanelWindow {
 			case Qt.RightButton:
 				const item = notifCards.itemAt(mouse.x, mouse.y);
 				const notification = item.modelData;
-				notification.dismiss();
 				root.daemon.notifications.delete(notification);
 				root.daemon.notificationsWasModified();
 				notification.Retainable.unlock();
@@ -63,7 +62,9 @@ PanelWindow {
 				if (notification.resident) {
 					notification.actions.find(x => x.identifier == "default");
 				} else {
-					notification.dismiss();
+					root.daemon.notifications.delete(notification);
+					root.daemon.notificationsWasModified();
+					notification.Retainable.unlock();
 				}
 			}
 		}
