@@ -17,9 +17,6 @@ PopupWindow {
 		onActiveChanged: {
 			if (active == false) {
 				root.visible = false;
-				console.log("cleared");
-			} else {
-				console.log("grabbed");
 			}
 		}
 	}
