@@ -1,3 +1,0 @@
-[submodule "dc-status-control"]
-	path = dc-status-control
-	url = git@git.katvef.fi:katvef/dc-status-control.git
