@@ -50,7 +50,7 @@ Repeater {
 					// trayItem.modelData.secondaryActivate();
 					trayItem.modelData.display(QsWindow.window, root.x + trayItem.x + mouse.x, root.y + trayItem.y + mouse.y);
 				} else if (mouse.button === Qt.RightButton && trayItem.modelData.hasMenu) {
-					pop.visible = true
+					pop.visible = true;
 				}
 			}
 
