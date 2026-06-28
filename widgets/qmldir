@@ -16,3 +16,4 @@ KSlider 1.0 Slider.qml
 CpuTemp 1.0 CpuTemp.qml
 CpuTempWidget 1.0 CpuTempWidget.qml
 NotificationHistory 1.0 NotificationHistory.qml
+DiscordStatus 1.0 DiscordStatus.qml

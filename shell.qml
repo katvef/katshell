@@ -67,7 +67,6 @@ ShellRoot {
 						implicitHeight: volume.implicitHeight
 
 						MouseArea {
-							id: tmp
 							anchors.fill: parent
 							preventStealing: true
 							hoverEnabled: true
@@ -274,6 +273,8 @@ ShellRoot {
 							}
 						}
 					}
+
+					DiscordStatus {}
 				}
 
 				// Middle
