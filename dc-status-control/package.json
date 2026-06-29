@@ -18,7 +18,7 @@
   },
   "type": "module",
   "dependencies": {
-    "discord-protos": "^1.2.233",
+    "discord-protos": "^1.2.239",
     "dotenv": "^17.4.2"
   }
 }

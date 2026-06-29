@@ -208,8 +208,8 @@ importers:
   .:
     dependencies:
       discord-protos:
-        specifier: ^1.2.233
-        version: 1.2.233
+        specifier: ^1.2.239
+        version: 1.2.239
       dotenv:
         specifier: ^17.4.2
         version: 17.4.2
@@ -219,8 +219,8 @@ packages:
   '@protobuf-ts/runtime@2.11.1':
     resolution: {integrity: sha512-KuDaT1IfHkugM2pyz+FwiY80ejWrkH1pAtOBOZFuR6SXEFTsnb/jiQWQ1rCIrcKx2BtyxnxW6BWwsVSA/Ie+WQ==}
 
-  discord-protos@1.2.233:
-    resolution: {integrity: sha512-s7QsTWPF6g/wpRL/pUrwL9bH9sZYY4Z0JvTXLjopIkFZKEaMmO/L/JqeN5Grlt+d9jnVA+RtqSwt0ZCxsrCuXA==}
+  discord-protos@1.2.239:
+    resolution: {integrity: sha512-Yrf0XZWW9TaAD+KvxGw8jynhidKdywfLbahJskiSzhGdA5kyxcvuxyeckYKst9or88giyZV0x+6u8MTZKUn31w==}
 
   dotenv@17.4.2:
     resolution: {integrity: sha512-nI4U3TottKAcAD9LLud4Cb7b2QztQMUEfHbvhTH09bqXTxnSie8WnjPALV/WMCrJZ6UV/qHJ6L03OqO3LcdYZw==}
@@ -230,7 +230,7 @@ snapshots:
 
   '@protobuf-ts/runtime@2.11.1': {}
 
-  discord-protos@1.2.233:
+  discord-protos@1.2.239:
     dependencies:
       '@protobuf-ts/runtime': 2.11.1
 
