@@ -55,6 +55,9 @@ const socket = new WebSocket(
 		hostname: "discord.com",
 		path: `/api/v${apiv}/gateway`,
 		method: "GET",
+		headers: {
+			Authorization: TOKEN,
+		},
 	}).then((data) => JSON.parse(data).url)}?v=${apiv}`,
 );
 
