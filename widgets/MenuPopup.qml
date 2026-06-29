@@ -28,7 +28,7 @@ PopupWindow {
 	property var entries: opener.children.values
 
 	Item {
-		property list<int> acceptedKeys: [Qt.Key_Up, Qt.Key_Down, Qt.Key_Right, Qt.Key_Left, Qt.Key_return]
+		readonly property list<int> acceptedKeys: [Qt.Key_Up, Qt.Key_Down, Qt.Key_Right, Qt.Key_Left, Qt.Key_return]
 		focus: true
 		Keys.onPressed: event => {
 			switch (event.key) {
@@ -126,6 +126,8 @@ PopupWindow {
 								id: icon
 								source: entry.modelData.icon
 								sourceSize: Qt.size(16, 16)
+								height: 16
+								width: 16
 								Component.onCompleted: content.hasIcons = true
 							}
 						}
