@@ -24,13 +24,28 @@ function httpsRequest(options, write) {
 	});
 }
 
+async function getSettings() {
+	let settings;
+	await httpsRequest({
+		hostname: "discord.com",
+		path: "/api/v10/users/@me/settings-proto/1",
+		method: "GET",
+		headers: {
+			Authorization: TOKEN,
+			"Content-Type": "application/json",
+		},
+	}).then((data) => {
+		settings = PreloadedUserSettings.fromBase64(JSON.parse(data).settings);
+	});
+	return settings;
+}
+
 async function setStatus(status) {
+	const status_settings = (await getSettings()).status;
+	status_settings.status = { value: status };
 	const data = JSON.stringify({
 		settings: PreloadedUserSettings.toBase64({
-			status: {
-				status: { value: status },
-				statusExpiresAtMs: 0n, // Having this unset causes errors due to it being parsed as undefined
-			},
+			status: status_settings,
 		}),
 	});
 
