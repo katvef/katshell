@@ -21,6 +21,7 @@ QtObject {
 	property color green: "#81b29a"
 	property color cyan: "#63cdcf"
 	property color blue: "#719cd6"
+	property color black: "#393b44"
 
 	function shade(color, l) {
 		return l < 0 ? Qt.darker(color, 1 - l) : Qt.lighter(color, 1 + l);
