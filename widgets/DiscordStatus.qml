@@ -8,7 +8,7 @@ Item {
 	anchors.top: parent.top
 	anchors.bottom: parent.bottom
 	width: icon.width
-	property string status: "waiting"
+	property string status
 	readonly property var proc: Process {
 		workingDirectory: Quickshell.shellDir + "/dc-status-control"
 		command: ["node", "./index.js"]
@@ -21,30 +21,41 @@ Item {
 		}
 	}
 
-	function setStatus(status) {
-		proc.write(`set ${status}\n`);
+	function setStatus(new_status) {
+		proc.write(`set ${new_status}\n`);
 	}
 
-	Image {
-		id: icon
-		source: switch (root.status) {
-		default:
-			return "https://i.imgur.com/QU35DxI.png";
-			break;
-		case "dnd":
-			return "https://i.imgur.com/JlXjK4S.png";
-			break;
-		case "invisible":
-			return "https://i.imgur.com/w3EYDuS.png";
+	onStatusChanged: {
+		switch (status) {
+		case "online":
+			icon.text = " ";
+			icon.color = Style.green;
 			break;
 		case "idle":
-			return "https://i.imgur.com/eHW8KmV.png";
+			icon.text = "󰤄 ";
+			icon.color = Style.yellow;
+			break;
+		case "invisible":
+			icon.text = " ";
+			icon.color = Style.shade(Style.black, 0.5);
+			break;
+		case "dnd":
+			icon.text = " ";
+			icon.color = Style.red;
 			break;
 		}
-
-		sourceSize: Qt.size(12, 12)
-		anchors.verticalCenter: parent.verticalCenter
 	}
+
+	Text {
+		id: icon
+		text: "?"
+		color: Style.black
+		verticalAlignment: Text.AlignVCenter
+		horizontalAlignment: Text.AlignHCenter
+		anchors.top: parent.top
+		anchors.bottom: parent.bottom
+	}
+
 	MouseArea {
 		anchors.fill: icon
 		acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
