@@ -7,6 +7,7 @@ import https from "https";
 const TOKEN = process.env.DISCORD_TOKEN;
 const apiv = 10;
 let status = null;
+let game_activity = null;
 let s = null;
 let timer;
 let ack_received = true;
@@ -48,7 +49,6 @@ async function setStatus(status) {
 			status: status_settings,
 		}),
 	});
-
 	const req = await httpsRequest(
 		{
 			hostname: "discord.com",
@@ -61,7 +61,29 @@ async function setStatus(status) {
 		},
 		data,
 	);
+	return req;
+}
 
+async function setShowCurrentGame(show) {
+	const status_settings = (await getSettings()).status;
+	status_settings.showCurrentGame = { value: show };
+	const data = JSON.stringify({
+		settings: PreloadedUserSettings.toBase64({
+			status: status_settings,
+		}),
+	});
+	const req = await httpsRequest(
+		{
+			hostname: "discord.com",
+			path: `/api/v${apiv}/users/@me/settings-proto/1`,
+			method: "PATCH",
+			headers: {
+				Authorization: TOKEN,
+				"Content-Type": "application/json",
+			},
+		},
+		data,
+	);
 	return req;
 }
 
@@ -82,11 +104,19 @@ const validStatuses = new Set(["online", "idle", "dnd", "invisible"]);
 rl.on("line", async (input) => {
 	const args = input.split(" ");
 	switch (args[0]) {
-		case "set":
+		case "status":
 			if (validStatuses.has(args[1])) {
-				setStatus(...args.slice(1));
+				setStatus(args[1]);
 			}
 			break;
+		case "game": {
+			if (args[1] == "show" || args[1] == "true") {
+				setShowCurrentGame(true);
+			} else if (args[1] == "hide" || args[1] == "false") {
+				setShowCurrentGame(false);
+			}
+			break;
+		}
 		case "close":
 			socket.close();
 			process.exit(0);
@@ -140,11 +170,13 @@ socket.addEventListener("message", (event) => {
 			if (data.t == "USER_SETTINGS_PROTO_UPDATE") {
 				const settings = PreloadedUserSettings.fromBase64(data.d.settings.proto);
 				status = settings.status.status.value;
-				console.log(status);
+				game_activity = settings.status.showCurrentGame.value;
+				console.log(status + " " + game_activity);
 			} else if (data.t == "READY") {
 				const settings = PreloadedUserSettings.fromBase64(data.d.user_settings_proto);
 				status = settings.status.status.value;
-				console.log(status);
+				game_activity = settings.status.showCurrentGame.value;
+				console.log(status + " " + game_activity);
 			}
 			break;
 	}

@@ -7,8 +7,9 @@ Item {
 	id: root
 	anchors.top: parent.top
 	anchors.bottom: parent.bottom
-	width: icon.width
+	width: status_icon.width
 	property string status
+	property bool game
 	readonly property var proc: Process {
 		workingDirectory: Quickshell.shellDir + "/dc-status-control"
 		command: ["node", "./index.js"]
@@ -16,64 +17,110 @@ Item {
 		running: true
 		stdout: SplitParser {
 			onRead: function (data) {
-				root.status = data;
+				const [status, game] = data.split(" ");
+				root.status = status;
+				if (game == "true") {
+					root.game = true;
+				} else if (game == "false") {
+					root.game = false;
+				}
 			}
 		}
 	}
 
 	function setStatus(new_status) {
-		proc.write(`set ${new_status}\n`);
+		proc.write(`status ${new_status}\n`);
+	}
+
+	function setGame(new_game) {
+		proc.write(`game ${new_game}\n`);
 	}
 
 	onStatusChanged: {
 		switch (status) {
 		case "online":
-			icon.text = " ";
-			icon.color = Style.green;
+			status_icon.text = " ";
+			status_icon.color = Style.green;
 			break;
 		case "idle":
-			icon.text = "󰤄 ";
-			icon.color = Style.yellow;
+			status_icon.text = "󰤄 ";
+			status_icon.color = Style.yellow;
 			break;
 		case "invisible":
-			icon.text = " ";
-			icon.color = Style.shade(Style.black, 0.5);
+			status_icon.text = " ";
+			status_icon.color = Style.shade(Style.black, 0.5);
 			break;
 		case "dnd":
-			icon.text = " ";
-			icon.color = Style.red;
+			status_icon.text = " ";
+			status_icon.color = Style.red;
 			break;
 		}
 	}
 
-	Text {
-		id: icon
-		text: "?"
-		color: Style.black
-		verticalAlignment: Text.AlignVCenter
-		horizontalAlignment: Text.AlignHCenter
-		anchors.top: parent.top
-		anchors.bottom: parent.bottom
+	onGameChanged: {
+		switch (game) {
+		case true:
+			game_icon.text = "󰊗 ";
+			game_icon.color = Style.green;
+			break;
+		case false:
+			game_icon.text = "󰊗 ";
+			game_icon.color = Style.red;
+			break;
+		}
 	}
 
-	MouseArea {
-		anchors.fill: icon
-		acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-		onClicked: mouse => {
-			if (mouse.button == Qt.LeftButton) {
-				popup.visible = !popup.visible;
-				popup.grab.active = true;
-			} else if (mouse.button == Qt.RightButton) {
-				if (root.status == "online") {
-					root.setStatus("idle");
-				} else {
-					root.setStatus("online");
+	Row {
+		anchors.top: parent.top
+		anchors.bottom: parent.bottom
+
+		Text {
+			id: status_icon
+			text: " "
+			color: Style.black
+			anchors.verticalCenter: parent.verticalCenter
+			verticalAlignment: Text.AlignVCenter
+			horizontalAlignment: Text.AlignHCenter
+			font.pixelSize: 16
+
+			MouseArea {
+				anchors.fill: parent
+				acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+				onClicked: mouse => {
+					if (mouse.button == Qt.LeftButton) {
+						popup.visible = !popup.visible;
+						popup.grab.active = true;
+					} else if (mouse.button == Qt.RightButton) {
+						if (root.status == "online") {
+							root.setStatus("idle");
+						} else {
+							root.setStatus("online");
+						}
+					} else if (mouse.button == Qt.MiddleButton) {
+						if (root.status == "online") {
+							root.setStatus("invisible");
+						} else {
+							root.setStatus("online");
+						}
+					}
 				}
-			} else if (mouse.button == Qt.MiddleButton) {
-				if (root.status == "online") {
-					root.setStatus("invisible");
-				} else {
-					root.setStatus("online");
+			}
+		}
+
+		Text {
+			id: game_icon
+			text: "󰊗 "
+			color: Style.black
+			anchors.verticalCenter: parent.verticalCenter
+			verticalAlignment: Text.AlignVCenter
+			horizontalAlignment: Text.AlignHCenter
+			font.pixelSize: 16
+
+			MouseArea {
+				anchors.fill: parent
+				acceptedButtons: Qt.LeftButton
+				onClicked: mouse => {
+					root.setGame(!root.game);
 				}
 			}
 		}
