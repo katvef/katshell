@@ -8,8 +8,8 @@ Item {
 	anchors.top: parent.top
 	anchors.bottom: parent.bottom
 	width: status_icon.width
-	property string status
-	property bool game
+	property string status: undefined
+	property bool game: undefined
 	readonly property var proc: Process {
 		workingDirectory: Quickshell.shellDir + "/dc-status-control"
 		command: ["node", "./index.js"]
@@ -17,6 +17,9 @@ Item {
 		running: true
 		stdout: SplitParser {
 			onRead: function (data) {
+				if (data == "connection lost") {
+					console.log("discord connection lost, restarting");
+				}
 				const [status, game] = data.split(" ");
 				root.status = status;
 				if (game == "true") {
@@ -26,13 +29,22 @@ Item {
 				}
 			}
 		}
+		stderr: SplitParser {
+			onRead: function (data) {
+				console.log(data);
+			}
+		}
+		onRunningChanged: running = true
+		Component.onDestruction: proc.write("close")
 	}
 
 	function setStatus(new_status) {
+		console.log(`status ${new_status}\n`);
 		proc.write(`status ${new_status}\n`);
 	}
 
 	function setGame(new_game) {
+		console.log(`game ${new_game}\n`);
 		proc.write(`game ${new_game}\n`);
 	}
 
@@ -53,19 +65,6 @@ Item {
 		case "dnd":
 			status_icon.text = " ";
 			status_icon.color = Style.red;
-			break;
-		}
-	}
-
-	onGameChanged: {
-		switch (game) {
-		case true:
-			game_icon.text = "󰊗 ";
-			game_icon.color = Style.green;
-			break;
-		case false:
-			game_icon.text = "󰊗 ";
-			game_icon.color = Style.red;
 			break;
 		}
 	}
@@ -110,7 +109,7 @@ Item {
 		Text {
 			id: game_icon
 			text: "󰊗 "
-			color: Style.black
+			color: game ? Style.green : Style.red
 			anchors.verticalCenter: parent.verticalCenter
 			verticalAlignment: Text.AlignVCenter
 			horizontalAlignment: Text.AlignHCenter
