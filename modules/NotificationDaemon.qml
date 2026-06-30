@@ -114,7 +114,6 @@ PanelWindow {
 
 	MouseArea {
 		anchors.fill: parent
-		acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 		hoverEnabled: true
 
 		onEntered: notifCards.children[0].children.forEach(x => {
@@ -129,36 +128,11 @@ PanelWindow {
 				v.running = root.expire;
 		})
 
-		onClicked: mouse => {
-			const item = notifCards.itemAt(mouse.x, mouse.y);
-			const notification = item.modelData;
-			switch (mouse.button) {
-			case Qt.LeftButton:
-				if (item != null) {
-					const defaultAction = notification.actions.find(x => x.identifier == "default");
-					if (defaultAction == undefined) {
-						notification.dismiss();
-					} else {
-						defaultAction.invoke();
-					}
-				}
-				break;
-			case Qt.MiddleButton:
-				root.expire = !root.expire;
-				break;
-			case Qt.RightButton:
-				if (notification.tracked == true) {
-					notification.dismiss();
-				} else {
-					notification.despawn();
-				}
-			}
-		}
-
 		ListView {
 			id: notifCards
 			anchors.fill: parent
 			model: server.trackedNotifications.values.concat(root.respawned)
+			// boundsMovement: Flickable.StopAtBounds
 			spacing: 6
 
 			onModelChanged: if (model.length == 0) {
@@ -170,6 +144,37 @@ PanelWindow {
 				required property var modelData
 				width: root.notifWidth
 				height: childrenRect.height + 6
+
+				MouseArea {
+					anchors.fill: parent
+					acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+					onClicked: mouse => {
+						const item = notifCards.itemAt(mouse.x, mouse.y);
+						const notification = item.modelData;
+						console.log("yes");
+						switch (mouse.button) {
+						case Qt.LeftButton:
+							if (item != null) {
+								const defaultAction = notification.actions.find(x => x.identifier == "default");
+								if (defaultAction == undefined) {
+									notification.dismiss();
+								} else {
+									defaultAction.invoke();
+								}
+							}
+							break;
+						case Qt.MiddleButton:
+							root.expire = !root.expire;
+							break;
+						case Qt.RightButton:
+							if (notification.tracked == true) {
+								notification.dismiss();
+							} else {
+								notification.despawn();
+							}
+						}
+					}
+				}
 
 				Text {
 					id: cardTime
