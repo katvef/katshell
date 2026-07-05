@@ -1,6 +1,6 @@
 import "dotenv/config";
 import * as readline from "node:readline";
-import { setInterval } from "node:timers";
+import { clearInterval, setInterval } from "node:timers";
 import { PreloadedUserSettings } from "discord-protos";
 import https from "https";
 
@@ -11,6 +11,8 @@ let game_activity = null;
 let s = null;
 let timer;
 let ack_received = true;
+let session_id;
+let resume_gateway_url;
 
 function httpsRequest(options, write) {
 	return new Promise((resolve) => {
@@ -119,6 +121,7 @@ rl.on("line", async (input) => {
 		}
 		case "close":
 			socket.close();
+			rl.close();
 			process.exit(0);
 	}
 });
@@ -141,7 +144,7 @@ socket.addEventListener("open", () => {
 	);
 });
 
-function heartbeatCallback() {
+async function heartbeatCallback() {
 	if (ack_received) {
 		ack_received = false;
 		socket.send(
@@ -150,34 +153,66 @@ function heartbeatCallback() {
 				d: s,
 			}),
 		);
+		console.error(s);
 	} else {
 		socket.close();
+		resume();
+		console.error("connection lost");
 	}
 }
 
-socket.addEventListener("message", (event) => {
-	const data = JSON.parse(event.data);
-	switch (data.op) {
-		case 10: // Hello
-			timer = setInterval(heartbeatCallback, data.d.heartbeat_interval);
-			s = data.s;
-			break;
-		case 11: // Heratbeat ACK
-			s = data.s;
-			ack_received = true;
-			break;
-		case 0: // Dispatch events
-			if (data.t == "USER_SETTINGS_PROTO_UPDATE") {
-				const settings = PreloadedUserSettings.fromBase64(data.d.settings.proto);
-				status = settings.status.status.value;
-				game_activity = settings.status.showCurrentGame.value;
-				console.log(status + " " + game_activity);
-			} else if (data.t == "READY") {
-				const settings = PreloadedUserSettings.fromBase64(data.d.user_settings_proto);
-				status = settings.status.status.value;
-				game_activity = settings.status.showCurrentGame.value;
-				console.log(status + " " + game_activity);
-			}
-			break;
-	}
-});
+async function resume() {
+	console.error("resuming connection");
+	socket = new WebSocket(`${resume_gateway_url}?v=${apiv}`);
+
+	socket.addEventListener("open", () => {
+		socket.send(
+			JSON.stringify({
+				op: 6, // Resume
+				d: {
+					token: TOKEN,
+					session_id: session_id,
+					seq: s,
+				},
+			}),
+		);
+	});
+
+	addListeners();
+}
+
+function addListeners() {
+	socket.addEventListener("message", (event) => {
+		const data = JSON.parse(event.data);
+		switch (data.op) {
+			case 10: // Hello
+				timer = setInterval(heartbeatCallback, data.d.heartbeat_interval);
+				s = data.s;
+				break;
+			case 11: // Heratbeat ACK
+				s = data.s;
+				ack_received = true;
+				break;
+			case 0: // Dispatch events
+				if (data.t == "USER_SETTINGS_PROTO_UPDATE") {
+					const settings = PreloadedUserSettings.fromBase64(data.d.settings.proto);
+					status = settings.status.status.value;
+					game_activity = settings.status.showCurrentGame.value;
+					console.log(status + " " + game_activity);
+				} else if (data.t == "READY") {
+					const settings = PreloadedUserSettings.fromBase64(data.d.user_settings_proto);
+					status = settings.status.status.value;
+					game_activity = settings.status.showCurrentGame.value;
+					resume_gateway_url = data.d.resume_gateway_url;
+					session_id = data.d.session_id;
+					console.log(status + " " + game_activity);
+				} else if (data.t == "RESUMED") {
+					console.error("Connection resumed");
+				}
+				s = data.s;
+				break;
+		}
+	});
+}
+
+addListeners();
