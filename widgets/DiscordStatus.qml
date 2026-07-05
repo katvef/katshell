@@ -154,4 +154,14 @@ Item {
 			}
 		}
 	}
+
+	IpcHandler {
+		target: "discord"
+		function setStatus(new_status: string): void {
+			root.setStatus(new_status);
+		}
+		function setGame(new_game: string): void {
+			root.setGame(new_game);
+		}
+	}
 }
