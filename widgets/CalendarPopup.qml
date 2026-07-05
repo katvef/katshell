@@ -61,12 +61,10 @@ PopupWindow {
 				property list<string> days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
 				property int day: Clock.date.getDate() % 7
 				property int firstDay: Clock.date.getDay()
-
 				model: 7
-
 				delegate: Text {
 					required property int index
-					text: weekdays.days[(index + weekdays.firstDay - weekdays.day) % 7]
+					text: weekdays.days[(35 + index + weekdays.firstDay - weekdays.day) % 7]
 					color: Style.text
 					font.bold: true
 					font.pixelSize: 10
