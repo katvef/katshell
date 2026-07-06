@@ -132,7 +132,6 @@ PanelWindow {
 			id: notifCards
 			anchors.fill: parent
 			model: server.trackedNotifications.values.concat(root.respawned)
-			// boundsMovement: Flickable.StopAtBounds
 			spacing: 6
 
 			onModelChanged: if (model.length == 0) {
