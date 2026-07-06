@@ -8,8 +8,8 @@ Item {
 	anchors.top: parent.top
 	anchors.bottom: parent.bottom
 	width: status_icon.width
-	property string status: undefined
-	property bool game: undefined
+	property string status
+	property bool game
 	readonly property var proc: Process {
 		workingDirectory: Quickshell.shellDir + "/dc-status-control"
 		command: ["node", "./index.js"]
@@ -131,7 +131,7 @@ Item {
 		item: root
 
 		MouseArea {
-			anchors.fill: popup
+			anchors.fill: parent
 			hoverEnabled: true
 			onExited: parent.visible = false
 		}
