@@ -153,7 +153,6 @@ async function heartbeatCallback() {
 				d: s,
 			}),
 		);
-		console.error(s);
 	} else {
 		socket.close();
 		resume();

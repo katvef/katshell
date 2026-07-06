@@ -135,7 +135,6 @@ PanelWindow {
 			onClicked: mouse => {
 				const item = notifCards.itemAt(mouse.x, mouse.y);
 				const notification = item.modelData;
-				console.log("yes");
 				switch (mouse.button) {
 				case Qt.LeftButton:
 					if (item != null) {
