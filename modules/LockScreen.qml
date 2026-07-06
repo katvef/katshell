@@ -60,12 +60,50 @@ Scope {
 
 			Rectangle {
 				anchors.fill: parent
+				anchors.horizontalCenter: parent.horizontalCenter
 				color: Style.shade(Qt.alpha(Style.background, 1), -0.5)
+			}
+
+			Text { // Time
+				anchors.topMargin: surface.height / 5
+				anchors.horizontalCenter: parent.horizontalCenter
+				anchors.top: parent.top
+				text: Qt.formatDateTime(Clock.date, "hh:mm:ss")
+				color: "white"
+				font.pointSize: 60
+			}
+
+			Text {
+				id: uptime
+				anchors.bottom: parent.bottom
+				anchors.right: parent.right
+				anchors.margins: 10
+
+				text: ""
+				color: "white"
+				font.pointSize: 25
+
+				Timer {
+					interval: 1000
+					running: true
+					triggeredOnStart: true
+					onTriggered: uptimeProc.running = true
+				}
+
+				Process {
+					id: uptimeProc
+					command: ["uptime", "-p"]
+					stdout: StdioCollector {
+						onStreamFinished: uptime.text = this.text
+					}
+				}
 			}
 
 			TextField {
 				id: passwordBox
-				anchors.centerIn: parent
+				anchors.bottomMargin: surface.height / 7 * 2
+				anchors.bottom: parent.bottom
+				anchors.horizontalCenter: parent.horizontalCenter
 
 				implicitWidth: 400
 				padding: 10
