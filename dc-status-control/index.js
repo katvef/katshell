@@ -13,6 +13,8 @@ let timer;
 let ack_received = true;
 let session_id;
 let resume_gateway_url;
+let reconnect_tries = 0
+const max_tries = 5
 
 function httpsRequest(options, write) {
 	return new Promise((resolve) => {
@@ -89,7 +91,7 @@ async function setShowCurrentGame(show) {
 	return req;
 }
 
-const socket = new WebSocket(
+let socket = new WebSocket(
 	`${await httpsRequest({
 		hostname: "discord.com",
 		path: `/api/v${apiv}/gateway`,
@@ -161,6 +163,10 @@ async function heartbeatCallback() {
 }
 
 async function resume() {
+	if (reconnect_tries == max_tries) {
+		console.error("connection lost")
+		process.exit()
+	}
 	console.error("resuming connection");
 	socket = new WebSocket(`${resume_gateway_url}?v=${apiv}`);
 
@@ -178,6 +184,7 @@ async function resume() {
 	});
 
 	addListeners();
+	reconnect_tries++
 }
 
 function addListeners() {
@@ -207,6 +214,7 @@ function addListeners() {
 					console.log(status + " " + game_activity);
 				} else if (data.t == "RESUMED") {
 					console.error("Connection resumed");
+					reconnect_tries = 0
 				}
 				s = data.s;
 				break;
