@@ -165,6 +165,7 @@ async function heartbeatCallback() {
 async function resume() {
 	if (reconnect_tries == max_tries) {
 		console.error("connection lost")
+		socket.close()
 		process.exit()
 	}
 	console.error("resuming connection");
