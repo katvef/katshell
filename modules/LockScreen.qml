@@ -8,6 +8,7 @@ import "../widgets"
 
 Scope {
 	id: root
+	property bool passwordBoxVisible: false
 	property string currentText: ""
 	property string promptText: "Enter password"
 	readonly property string failureText: "Incorrect password"
@@ -15,6 +16,18 @@ Scope {
 
 	function unlocked() {
 		lock.locked = false;
+	}
+
+	function showPasswordBox() {
+		root.passwordBoxVisible = true;
+		hidePasswordBox.running = true;
+	}
+
+	Timer {
+		id: hidePasswordBox
+		interval: 10000
+		repeat: false
+		onTriggered: root.passwordBoxVisible = false
 	}
 
 	signal failed
@@ -64,13 +77,29 @@ Scope {
 				color: Style.shade(Qt.alpha(Style.background, 1), -0.5)
 			}
 
-			Text { // Time
+			MouseArea {
+				anchors.fill: parent
+				hoverEnabled: true
+				acceptedButtons: Qt.NoButton
+				onPositionChanged: root.showPasswordBox()
+			}
+
+			Text {
+				id: time
 				anchors.topMargin: surface.height / 5
 				anchors.horizontalCenter: parent.horizontalCenter
 				anchors.top: parent.top
 				text: Qt.formatDateTime(Clock.date, "hh:mm:ss")
 				color: "white"
 				font.pointSize: 60
+			}
+
+			Text { // Date
+				anchors.horizontalCenter: parent.horizontalCenter
+				anchors.top: time.bottom
+				text: Qt.formatDateTime(Clock.date, "MMMM d yyyy")
+				color: Qt.alpha("white", 0.5)
+				font.pointSize: 30
 			}
 
 			Text {
@@ -101,6 +130,7 @@ Scope {
 
 			TextField {
 				id: passwordBox
+				visible: root.passwordBoxVisible
 				anchors.bottomMargin: surface.height / 7 * 2
 				anchors.bottom: parent.bottom
 				anchors.horizontalCenter: parent.horizontalCenter
@@ -120,6 +150,7 @@ Scope {
 
 				onTextChanged: {
 					root.currentText = this.text;
+					root.showPasswordBox();
 					passwordBox.placeholderText = root.promptText;
 					passwordBox.placeholderTextColor = Style.bright;
 				}
