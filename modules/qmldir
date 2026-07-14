@@ -6,4 +6,5 @@ singleton Mem 1.0 Mem.qml
 singleton Util 1.0 Util.qml
 singleton MediaManager 1.0 MediaManager.qml
 singleton NotificationDaemon 1.0 NotificationDaemon.qml
+singleton DiscordStatusProcess 1.0 DiscordStatusProcess.qml
 LockScreen 1.0 LockScreen.qml

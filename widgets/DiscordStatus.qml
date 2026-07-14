@@ -10,32 +10,17 @@ Item {
 	width: status_icon.width
 	property string status
 	property bool game
-	readonly property var proc: Process {
-		workingDirectory: Quickshell.shellDir + "/dc-status-control"
-		command: ["node", "./index.js"]
-		stdinEnabled: true
-		running: true
-		stdout: SplitParser {
-			onRead: function (data) {
-				if (data == "connection lost") {
-					console.log("discord connection lost, restarting");
-				}
-				const [status, game] = data.split(" ");
-				root.status = status;
-				if (game == "true") {
-					root.game = true;
-				} else if (game == "false") {
-					root.game = false;
-				}
-			}
+	readonly property var proc: DiscordStatusProcess
+
+	Connections {
+		target: proc
+
+		function onStatusChanged(new_status) {
+			root.status = new_status;
 		}
-		stderr: SplitParser {
-			onRead: function (data) {
-				console.log(data);
-			}
+		function onGameChanged(show) {
+			root.game = show;
 		}
-		onRunningChanged: running = true
-		Component.onDestruction: proc.write("close")
 	}
 
 	function setStatus(new_status) {
