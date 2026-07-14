@@ -48,26 +48,43 @@ PopupWindow {
 			columns: 7
 			spacing: 2
 
-			property int days: Clock.date.getDate()
-
-			Component.onCompleted: {
-				const d = Clock.date;
-				days = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate();
-			}
+			property int days: new Date(Clock.date.getUTCFullYear(), Clock.date.getUTCMonth(), 0).getUTCDate()
 
 			// Weekday names
 			Repeater {
 				id: weekdays
 				property list<string> days: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
-				property int day: Clock.date.getDate() % 7
-				property int firstDay: Clock.date.getDay()
 				model: 7
 				delegate: Text {
 					required property int index
-					text: weekdays.days[(35 + index + weekdays.firstDay - weekdays.day) % 7]
+					text: weekdays.days[index]
 					color: Style.text
 					font.bold: true
 					font.pixelSize: 10
+				}
+			}
+
+			// Previous dates
+			Repeater {
+				id: prevDates
+				property int prevDays: new Date(Clock.date.getUTCFullYear(), Clock.date.getUTCMonth() - 1, 0).getUTCDate()
+				model: new Date(Clock.date.getUTCFullYear(), Clock.date.getUTCMonth()).getUTCDay()
+
+
+				delegate: Rectangle {
+					required property int index
+
+					width: 24
+					height: 24
+					color: Qt.alpha(Style.foreground, 0.5)
+					radius: 3
+
+					Text {
+						anchors.centerIn: parent
+						text: prevDates.prevDays - (prevDates.model - parent.index - 1)
+						color: Qt.alpha(Style.text, 0.5)
+						font.bold: parent.today
+					}
 				}
 			}
 
@@ -77,7 +94,7 @@ PopupWindow {
 
 				delegate: Rectangle {
 					required property int index
-					property bool today: Clock.date.getDate() == index + 1
+					property bool today: Clock.date.getUTCDate() == index + 1
 
 					width: 24
 					height: 24
