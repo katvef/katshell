@@ -44,86 +44,18 @@ PanelWindow {
 		anchors.fill: parent
 	}
 
-	MouseArea {
+	ListView {
+		id: notifCards
 		anchors.fill: parent
-		acceptedButtons: Qt.LeftButton | Qt.RightButton
-		hoverEnabled: true
+		anchors.margins: 6
+		spacing: 6
+		clip: true
 
-		onClicked: mouse => {
-			switch (mouse.button) {
-			case Qt.RightButton:
-				const item = notifCards.itemAt(mouse.x, mouse.y);
-				const notification = item.modelData;
-				root.daemon.notifications.delete(notification);
-				root.daemon.notificationsWasModified();
-				notification.Retainable.unlock();
-				break;
-			case Qt.LeftButton:
-				if (notification.resident) {
-					notification.actions.find(x => x.identifier == "default");
-				} else {
-					root.daemon.notifications.delete(notification);
-					root.daemon.notificationsWasModified();
-					notification.Retainable.unlock();
-				}
-			}
-		}
+		model: daemon.notificationsList
 
-		ListView {
-			id: notifCards
-			anchors.fill: parent
-			anchors.margins: 6
-			spacing: 6
-			clip: true
-
-			model: daemon.notificationsList
-
-			delegate: Background { // Keep in sync with NotificationDaemon.qml
-				id: card
-				required property var modelData
-				width: root.width - 12
-				height: childrenRect.height + 6
-
-				Text {
-					id: cardTime
-					anchors.top: parent.top
-					anchors.right: parent.right
-					anchors.topMargin: 2
-					anchors.rightMargin: 5
-					text: Qt.formatDateTime(modelData.time, "yyyy-MM-dd hh:mm:ss")
-					color: Qt.alpha(Style.text, 0.75)
-					font.pixelSize: 11
-				}
-
-				Text {
-					id: cardSummary
-					anchors.left: parent.left
-					anchors.top: parent.top
-					anchors.right: cardTime.left
-					anchors.leftMargin: 6
-
-					width: root.width - 6
-					wrapMode: Text.Wrap
-					color: Style.text
-					textFormat: Text.PlainText
-					text: modelData.summary
-					font.pixelSize: 16
-				}
-
-				Text {
-					id: cardBody
-					anchors.left: parent.left
-					anchors.top: cardSummary.bottom
-					anchors.topMargin: 3
-					anchors.leftMargin: 6
-
-					width: root.height - 6
-					wrapMode: Text.Wrap
-					color: Style.text
-					textFormat: Text.StyledText
-					text: modelData.body
-				}
-			}
+		delegate: NotificationCard { // Keep in sync with NotificationDaemon.qml
+			notifWidth: root.width - 12
+			expire: false
 		}
 	}
 }

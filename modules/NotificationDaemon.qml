@@ -129,8 +129,7 @@ PanelWindow {
 		})
 
 		MouseArea {
-			parent: notifCards
-			anchors.fill: notifCards
+			anchors.fill: parent
 			acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
 			onClicked: mouse => {
 				const item = notifCards.itemAt(mouse.x, mouse.y);
@@ -157,125 +156,58 @@ PanelWindow {
 					}
 				}
 			}
-		}
 
-		ListView {
-			id: notifCards
-			anchors.fill: parent
-			model: server.trackedNotifications.values.concat(root.respawned)
-			spacing: 6
+			ListView {
+				id: notifCards
+				anchors.fill: parent
+				model: server.trackedNotifications.values.concat(root.respawned)
+				spacing: 6
 
-			onModelChanged: if (model.length == 0) {
-				root.expire = true;
-			}
-
-			delegate: Background { // Keep in sync with NotificationHistory.qml
-				id: card
-				required property var modelData
-				width: root.notifWidth
-				height: childrenRect.height + 6
-
-				Text {
-					id: cardTime
-					property int daysAgo: Math.round((modelData.time - Clock.time) / (24 * 60 * 60 * 1000))
-					anchors.top: parent.top
-					anchors.right: parent.right
-					anchors.topMargin: 2
-					anchors.rightMargin: 5
-					horizontalAlignment: Text.AlignRight
-					text: {
-						let days;
-						switch (daysAgo) {
-						case 0:
-							days = "today\n";
-							break;
-						case 1:
-							days = "yesterday\n";
-						default:
-							days = daysAgo + " days ago\n";
-						}
-						return days + Qt.formatDateTime(modelData.time, "hh:mm:ss");
-					}
-					color: Qt.alpha(Style.text, 0.75)
-					font.pixelSize: 11
+				onModelChanged: if (model.length == 0) {
+					root.expire = true;
 				}
 
-				Text {
-					id: cardSummary
-					anchors.left: parent.left
-					anchors.top: parent.top
-					anchors.right: cardTime.left
-					anchors.leftMargin: 6
+				delegate: NotificationCard {
+					id: card
+					notifWidth: root.notifWidth
+					expire: root.expire
 
-					width: root.width - 6
-					wrapMode: Text.Wrap
-					color: Style.text
-					textFormat: Text.PlainText
-					text: modelData.summary
-					font.pixelSize: 14
-				}
+					GridLayout {
+						id: buttons
+						property var actions: card.modelData.actions.filter(x => x.identifier != "default")
+						anchors.top: parent.cardBody.bottom
+						anchors.left: card.left
+						anchors.right: card.right
+						anchors.margins: actions.length > 0 ? 6 : 0
+						columns: 2
+						uniformCellWidths: true
 
-				Text {
-					id: cardBody
-					anchors.left: parent.left
-					anchors.top: cardSummary.bottom
-					anchors.topMargin: 5
-					anchors.leftMargin: 6
+						Repeater {
+							id: button
+							model: parent.actions
+							delegate: Button {
+								required property var modelData
+								text: modelData.text ?? ""
+								Layout.preferredWidth: buttons.width / 2 - 3
 
-					width: root.notifWidth - 6
-					wrapMode: Text.Wrap
-					color: Style.text
-					textFormat: Text.StyledText
-					text: modelData.body
-				}
+								background: Background {}
+								contentItem: Text {
+									text: parent.modelData.text ?? parent.modelData.identifier
+									color: Style.text
+									anchors.centerIn: parent
+									horizontalAlignment: Text.AlignHCenter
+									font.pixelSize: 11
+									wrapMode: Text.Wrap
+								}
 
-				GridLayout {
-					id: buttons
-					property var actions: card.modelData.actions.filter(x => x.identifier != "default")
-					anchors.top: cardBody.bottom
-					anchors.left: card.left
-					anchors.right: card.right
-					anchors.margins: actions.length > 0 ? 6 : 0
-					columns: 2
-					uniformCellWidths: true
-
-					Repeater {
-						id: button
-						model: parent.actions
-						delegate: Button {
-							required property var modelData
-							text: modelData.text ?? ""
-							Layout.preferredWidth: buttons.width / 2 - 3
-
-							background: Background {}
-							contentItem: Text {
-								text: parent.modelData.text ?? parent.modelData.identifier
-								color: Style.text
-								anchors.centerIn: parent
-								horizontalAlignment: Text.AlignHCenter
-								font.pixelSize: 11
-								wrapMode: Text.Wrap
-							}
-
-							onClicked: {
-								modelData.invoke();
-								if (card.modelData.resident) {
-									card.modelData.expirationTimer.running = false;
-								} else {
+								onClicked: {
+									modelData.invoke();
 									card.modelData.dismiss();
 									card.modelData.tracked = false;
 								}
 							}
 						}
 					}
-				}
-
-				property Timer expirationTimer: Timer {
-					interval: parent.modelData.expireTimeout > 0 ? parent.modelData.expireTimeout * 1000 : 4000
-					running: root.expire
-					repeat: false
-
-					onTriggered: parent.modelData.expire()
 				}
 			}
 		}
