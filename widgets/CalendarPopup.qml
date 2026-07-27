@@ -70,7 +70,6 @@ PopupWindow {
 				property int prevDays: new Date(Clock.date.getUTCFullYear(), Clock.date.getUTCMonth() - 1, 0).getUTCDate()
 				model: new Date(Clock.date.getUTCFullYear(), Clock.date.getUTCMonth()).getUTCDay()
 
-
 				delegate: Rectangle {
 					required property int index
 
@@ -83,7 +82,6 @@ PopupWindow {
 						anchors.centerIn: parent
 						text: prevDates.prevDays - (prevDates.model - parent.index - 1)
 						color: Qt.alpha(Style.text, 0.5)
-						font.bold: parent.today
 					}
 				}
 			}
