@@ -128,83 +128,82 @@ PanelWindow {
 				v.running = root.expire;
 		})
 
-		MouseArea {
+		ListView {
+			id: notifCards
 			anchors.fill: parent
-			acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
-			onClicked: mouse => {
-				const item = notifCards.itemAt(mouse.x, mouse.y);
-				const notification = item.modelData;
-				switch (mouse.button) {
-				case Qt.LeftButton:
-					if (item != null) {
-						const defaultAction = notification.actions.find(x => x.identifier == "default");
-						if (defaultAction == undefined) {
-							notification.dismiss();
-						} else {
-							defaultAction.invoke();
-						}
-					}
-					break;
-				case Qt.MiddleButton:
-					root.expire = !root.expire;
-					break;
-				case Qt.RightButton:
-					if (notification.tracked == true) {
-						notification.dismiss();
-					} else {
-						notification.despawn();
-					}
-				}
+			model: server.trackedNotifications.values.concat(root.respawned)
+			spacing: 6
+
+			onModelChanged: if (model.length == 0) {
+				root.expire = true;
 			}
 
-			ListView {
-				id: notifCards
-				anchors.fill: parent
-				model: server.trackedNotifications.values.concat(root.respawned)
-				spacing: 6
+			delegate: NotificationCard {
+				id: card
+				notifWidth: root.notifWidth
+				expire: root.expire
 
-				onModelChanged: if (model.length == 0) {
-					root.expire = true;
+				MouseArea {
+					anchors.fill: parent
+					acceptedButtons: Qt.LeftButton | Qt.RightButton | Qt.MiddleButton
+					onClicked: mouse => {
+						const notification = card.modelData;
+						switch (mouse.button) {
+						case Qt.LeftButton:
+							if (item != null) {
+								const defaultAction = notification.actions.find(x => x.identifier == "default");
+								if (defaultAction == undefined) {
+									notification.dismiss();
+								} else {
+									defaultAction.invoke();
+								}
+							}
+							break;
+						case Qt.MiddleButton:
+							root.expire = !root.expire;
+							break;
+						case Qt.RightButton:
+							if (notification.tracked == true) {
+								notification.dismiss();
+							} else {
+								notification.despawn();
+							}
+						}
+					}
 				}
 
-				delegate: NotificationCard {
-					id: card
-					notifWidth: root.notifWidth
-					expire: root.expire
+				GridLayout {
+					id: buttons
+					property var actions: card.modelData.actions.filter(x => x.identifier != "default")
+					anchors.top: parent.cardBody.bottom
+					anchors.left: card.left
+					anchors.right: card.right
+					anchors.margins: actions.length > 0 ? 6 : 0
+					columns: 2
+					uniformCellWidths: true
 
-					GridLayout {
-						id: buttons
-						property var actions: card.modelData.actions.filter(x => x.identifier != "default")
-						anchors.top: parent.cardBody.bottom
-						anchors.left: card.left
-						anchors.right: card.right
-						anchors.margins: actions.length > 0 ? 6 : 0
-						columns: 2
-						uniformCellWidths: true
+					Repeater {
+						id: button
+						model: parent.actions
+						delegate: Button {
+							required property var modelData
+							text: modelData.text ?? ""
+							Layout.preferredWidth: buttons.width / 2 - 3
 
-						Repeater {
-							id: button
-							model: parent.actions
-							delegate: Button {
-								required property var modelData
-								text: modelData.text ?? ""
-								Layout.preferredWidth: buttons.width / 2 - 3
+							background: Background {}
+							contentItem: Text {
+								text: parent.modelData.text ?? parent.modelData.identifier
+								color: Style.text
+								anchors.centerIn: parent
+								horizontalAlignment: Text.AlignHCenter
+								font.pixelSize: 11
+								wrapMode: Text.Wrap
+							}
 
-								background: Background {}
-								contentItem: Text {
-									text: parent.modelData.text ?? parent.modelData.identifier
-									color: Style.text
-									anchors.centerIn: parent
-									horizontalAlignment: Text.AlignHCenter
-									font.pixelSize: 11
-									wrapMode: Text.Wrap
-								}
-
-								onClicked: {
-									modelData.invoke();
-									card.modelData.dismiss();
-									card.modelData.tracked = false;
-								}
+							onClicked: {
+								modelData.invoke();
+								card.modelData.dismiss();
+								card.modelData.tracked = false;
 							}
 						}
 					}
