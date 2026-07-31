@@ -7,10 +7,10 @@ QtObject {
 	id: root
 	property var players: Mpris.players.values
 	property int playerIndex: 0
-	property MprisPlayer activePlayer: players.length > 0 ? players[playerIndex] : null;
+	property MprisPlayer activePlayer: players.length > 0 ? players[playerIndex] : null
 	property string defaultPlayer
 	onDefaultPlayerChanged: playerIndex = players.findIndex(x => x.dbusName.match(defaultPlayer) != null)
-	onPlayerIndexChanged: activePlayer = players.length > 0 ? players[playerIndex] : null;
+	onPlayerIndexChanged: updatePlayers()
 
 	readonly property Timer timer: Timer {
 		interval: 3000
@@ -24,6 +24,7 @@ QtObject {
 		if (playerIndex >= players.length) {
 			playerIndex = 0;
 		}
+		activePlayer = players.length > 0 ? players[playerIndex] : null;
 	}
 
 	function nextPlayer() {
